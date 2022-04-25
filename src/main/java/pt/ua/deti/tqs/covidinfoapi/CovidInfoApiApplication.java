@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheDetails;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryListCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryCovidInfoCache;
@@ -42,6 +44,20 @@ public class CovidInfoApiApplication {
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public CacheDetails cacheDetails() {
         return new CacheDetails();
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("GET", "POST","PUT", "DELETE");
+            }
+        };
+
     }
 
 }

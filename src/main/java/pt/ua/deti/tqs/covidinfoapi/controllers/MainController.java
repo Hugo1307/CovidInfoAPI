@@ -3,10 +3,7 @@ package pt.ua.deti.tqs.covidinfoapi.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheDetails;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheInjector;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheManager;
@@ -38,7 +35,7 @@ public class MainController {
     private final CacheDetails cacheDetails;
 
     @Autowired
-    public MainController(VacCovidApiService vacCovidAPIService, Covid19ApiService covid19ApiService, WorldCovidInfoSingleCache worldCovidInfoCache, CountryCovidInfoCache countryCovidInfoCache, CacheManager cacheManager, CacheInjector cacheInjector, CacheDetails cacheDetails) {
+    public MainController(VacCovidApiService vacCovidAPIService, Covid19ApiService covid19ApiService, CacheManager cacheManager, CacheInjector cacheInjector, CacheDetails cacheDetails) {
         this.vacCovidAPIService = vacCovidAPIService;
         this.covid19ApiService = covid19ApiService;
         this.cacheInjector = cacheInjector;
@@ -46,8 +43,8 @@ public class MainController {
         this.cacheDetails = cacheDetails;
     }
 
-    @RequestMapping(value = "/country")
-    ResponseEntity<?> getCountryCovidInfo(@RequestBody Country country, @RequestParam Optional<ExternalAPI.AvailableAPI> api) {
+    @GetMapping(value = "/country")
+    ResponseEntity<?> getCountryCovidInfo(@RequestParam String countryName, @RequestParam String countryCode, @RequestParam Optional<ExternalAPI.AvailableAPI> api) {
 
         IExternalApiService apiService;
         CountryCovidInfoCache countryCovidInfoCache = cacheInjector.getCountryCovidInfoCache();
@@ -56,6 +53,8 @@ public class MainController {
             apiService = api.get() == ExternalAPI.AvailableAPI.VAC_COVID ? vacCovidAPIService : covid19ApiService;
         else
             apiService = vacCovidAPIService;
+
+        Country country = new Country(countryName, countryCode);
 
         if (cacheManager.isValid(country.getName(), countryCovidInfoCache))
             return new ResponseEntity<>(cacheManager.getCachedValue(country.getName(), countryCovidInfoCache).getCachedValue(), HttpStatus.OK);
@@ -67,7 +66,7 @@ public class MainController {
 
     }
 
-    @RequestMapping(value = "/world")
+    @GetMapping(value = "/world")
     ResponseEntity<?> getWorldCovidInfo() {
 
         WorldCovidInfoSingleCache worldCovidInfoCache = cacheInjector.getWorldCovidInfoCache();
@@ -82,7 +81,7 @@ public class MainController {
 
     }
 
-    @RequestMapping(value = "/countries")
+    @GetMapping(value = "/countries")
     ResponseEntity<?> getAllCountries(@RequestParam Optional<ExternalAPI.AvailableAPI> api) {
 
         IExternalApiService apiService;
@@ -104,7 +103,7 @@ public class MainController {
 
     }
 
-    @RequestMapping(value = "/cache/details")
+    @GetMapping(value = "/cache/details")
     ResponseEntity<?> getCacheDetails() {
         return new ResponseEntity<>(cacheDetails, HttpStatus.OK);
     }
