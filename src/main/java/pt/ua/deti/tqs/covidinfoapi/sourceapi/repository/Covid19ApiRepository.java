@@ -49,9 +49,13 @@ public class Covid19ApiRepository implements IExternalApiRepository{
 
         String responseBodyAsString = response.getBody();
 
-        JsonObject responseJsonObj = JsonParser.parseString(responseBodyAsString).getAsJsonObject()
-                .get("response").getAsJsonArray()
-                .get(0).getAsJsonObject();
+        JsonArray responseJsonArray = JsonParser.parseString(responseBodyAsString).getAsJsonObject()
+                .get("response").getAsJsonArray();
+
+        if (responseJsonArray.size() == 0)
+            throw new NoDataFoundException("Unable to find data for that country.");
+
+        JsonObject responseJsonObj = responseJsonArray.get(0).getAsJsonObject();
 
         if (responseJsonObj == null || responseJsonObj.isJsonNull())
             throw new NoDataFoundException("Unable to find data for that country.");

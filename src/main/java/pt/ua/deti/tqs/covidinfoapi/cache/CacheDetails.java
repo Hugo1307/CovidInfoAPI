@@ -1,7 +1,9 @@
 package pt.ua.deti.tqs.covidinfoapi.cache;
 
 import lombok.Data;
+import lombok.Generated;
 
+@Generated
 @Data
 public class CacheDetails {
 

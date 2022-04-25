@@ -3,6 +3,9 @@ package pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
+import lombok.Generated;
+
+@Generated
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class VacCovidWorldCovidInfo {

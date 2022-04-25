@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Generated;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
 
+@Generated
 @Data
 @JsonIgnoreProperties(ignoreUnknown=true)
 @EqualsAndHashCode(callSuper = true)

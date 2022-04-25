@@ -1,5 +1,6 @@
 package pt.ua.deti.tqs.covidinfoapi.cache;
 
+import lombok.Generated;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryListCache;
 
 @Component
 @Getter
+@Generated
 public class CacheManager {
 
     private final CountryListCache countryListCache;
