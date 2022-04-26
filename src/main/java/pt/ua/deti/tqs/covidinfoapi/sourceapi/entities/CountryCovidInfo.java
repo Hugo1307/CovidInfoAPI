@@ -20,7 +20,7 @@ public abstract class CountryCovidInfo {
     @JsonAlias("Population")
     private int population;
 
-    @JsonAlias({ "TotalCases", "$cases.total" })
+    @JsonAlias({ "TotalCases" })
     private int totalCases;
 
     @JsonAlias("NewCases")

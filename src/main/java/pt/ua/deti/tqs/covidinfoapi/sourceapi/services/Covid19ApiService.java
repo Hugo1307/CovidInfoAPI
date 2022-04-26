@@ -45,7 +45,7 @@ public class Covid19ApiService implements IExternalApiService {
 
             return mapper.readValue(generalCovidInfoJsonObj.toString(), Covid19CountryCovidInfo.class);
 
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | NullPointerException e) {
             throw new DataFetchException("Unable to parse data from upstream server.");
         }
 

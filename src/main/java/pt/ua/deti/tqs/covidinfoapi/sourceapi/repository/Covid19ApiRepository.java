@@ -3,6 +3,9 @@ package pt.ua.deti.tqs.covidinfoapi.sourceapi.repository;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,10 +22,14 @@ import java.util.Map;
 @Component
 public class Covid19ApiRepository implements IExternalApiRepository{
 
+    private final RestTemplate restTemplate;
+
     private final Covid19API covid19API;
 
-    public Covid19ApiRepository() {
-        this.covid19API = new Covid19API("https://covid-193.p.rapidapi.com", "dbd92461c3msh03b2a93b4b69037p122734jsn4e1f7a225e85");
+    @Autowired
+    public Covid19ApiRepository(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        this.covid19API = new Covid19API(API_ENDPOINTS.BASE_URL.getUrl(), "dbd92461c3msh03b2a93b4b69037p122734jsn4e1f7a225e85");
     }
 
     @Override
@@ -33,7 +40,6 @@ public class Covid19ApiRepository implements IExternalApiRepository{
     @Override
     public JsonObject getCountryCovidInfo(Country country) {
 
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         Map<String, String> params = new HashMap<>();
 
@@ -42,9 +48,9 @@ public class Covid19ApiRepository implements IExternalApiRepository{
 
         params.put("country", country.getName());
 
-        ResponseEntity<String> response = restTemplate.exchange(covid19API.getBaseUrl() + "/statistics?country={country}", HttpMethod.GET, new HttpEntity<>("body", headers), String.class, params);
+        ResponseEntity<String> response = restTemplate.exchange(API_ENDPOINTS.COUNTRY_INFO.getUrl(), HttpMethod.GET, new HttpEntity<>("body", headers), String.class, params);
 
-        if (!response.hasBody() || response.getBody() == null)
+        if (!response.hasBody() || response.getBody() == null || response.getStatusCode() != HttpStatus.OK)
             throw new DataFetchException("Unable to fetch country report. The server didn't report any results.");
 
         String responseBodyAsString = response.getBody();
@@ -52,7 +58,7 @@ public class Covid19ApiRepository implements IExternalApiRepository{
         JsonArray responseJsonArray = JsonParser.parseString(responseBodyAsString).getAsJsonObject()
                 .get("response").getAsJsonArray();
 
-        if (responseJsonArray.size() == 0)
+        if (responseJsonArray.isEmpty())
             throw new NoDataFoundException("Unable to find data for that country.");
 
         JsonObject responseJsonObj = responseJsonArray.get(0).getAsJsonObject();
@@ -66,15 +72,14 @@ public class Covid19ApiRepository implements IExternalApiRepository{
     @Override
     public JsonArray getAllCountries() {
 
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
 
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.add("X-RapidAPI-Key", covid19API.getApiKey());
 
-        ResponseEntity<String> response = restTemplate.exchange(covid19API.getBaseUrl() + "/countries", HttpMethod.GET, new HttpEntity<>("body", headers), String.class);
+        ResponseEntity<String> response = restTemplate.exchange(API_ENDPOINTS.ALL_COUNTRIES.getUrl(), HttpMethod.GET, new HttpEntity<>("body", headers), String.class);
 
-        if (!response.hasBody() || response.getBody() == null)
+        if (!response.hasBody() || response.getBody() == null || response.getStatusCode() != HttpStatus.OK)
             throw new DataFetchException("Unable to fetch country report. The server didn't report any results.");
 
         String responseBodyAsString = response.getBody();
@@ -82,9 +87,20 @@ public class Covid19ApiRepository implements IExternalApiRepository{
         JsonArray responseJsonArray = JsonParser.parseString(responseBodyAsString).getAsJsonObject()
                 .get("response").getAsJsonArray();
 
-        if (responseJsonArray == null || responseJsonArray.isJsonNull())
+        if (responseJsonArray == null || responseJsonArray.isEmpty())
             throw new NoDataFoundException("Unable to find data for that country.");
         return responseJsonArray;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    enum API_ENDPOINTS {
+        BASE_URL("https://covid-193.p.rapidapi.com"),
+        COUNTRY_INFO(BASE_URL.getUrl() + "/statistics?country={country}"),
+        ALL_COUNTRIES(BASE_URL.getUrl() + "/countries");
+
+        private final String url;
+
     }
 
 }
