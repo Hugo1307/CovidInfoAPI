@@ -28,14 +28,17 @@ public class CovidInfoApiApplication {
         return builder.build();
     }
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public WorldCovidInfoSingleCache worldCovidInfoCache() {
         return new WorldCovidInfoSingleCache();
     }
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public CountryCovidInfoCache countryCovidInfoCacheManager() {
         return new CountryCovidInfoCache();
     }
     @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public CountryListCache countryListCache() {
         return new CountryListCache();
     }

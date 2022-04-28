@@ -5,11 +5,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import pt.ua.deti.tqs.covidinfoapi.exception.implementations.DataFetchException;
 import pt.ua.deti.tqs.covidinfoapi.exception.implementations.NoDataFoundException;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
@@ -29,6 +28,7 @@ public class VacCovidApiService implements IExternalApiService {
         this.vacCovidApiRepository = vacCovidApiRepository;
     }
 
+    @SneakyThrows
     @Override
     @NonNull
     public CountryCovidInfo getCountryCovidInfo(Country country) {
@@ -38,14 +38,11 @@ public class VacCovidApiService implements IExternalApiService {
         if (generalCovidInfoJsonObj == null)
             throw new NoDataFoundException("Unable to find data for country covid info.");
 
-        try {
-            return new ObjectMapper().readValue(generalCovidInfoJsonObj.toString(), VacCovidCountryCovidInfo.class);
-        } catch (JsonProcessingException e) {
-           throw new DataFetchException("Unable to parse data from upstream server.");
-        }
+        return new ObjectMapper().readValue(generalCovidInfoJsonObj.toString(), VacCovidCountryCovidInfo.class);
 
     }
 
+    @SneakyThrows
     @Override
     public List<Country> getAllCountries() {
 
@@ -54,16 +51,12 @@ public class VacCovidApiService implements IExternalApiService {
         if (allCountriesJsonArray == null)
             throw new NoDataFoundException("Unable to find data for list of countries.");
 
-        try {
-            return new ObjectMapper().readValue(allCountriesJsonArray.toString(), new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new DataFetchException("Unable to parse data from upstream server.");
-        }
+        return new ObjectMapper().readValue(allCountriesJsonArray.toString(), new TypeReference<>() {});
 
     }
 
     @NonNull
+    @SneakyThrows
     public VacCovidWorldCovidInfo getWorldCovidInfo() {
 
         JsonObject generalCovidInfoJsonObj = vacCovidApiRepository.getWorldCovidInfo();
@@ -71,11 +64,7 @@ public class VacCovidApiService implements IExternalApiService {
         if (generalCovidInfoJsonObj == null)
             throw new NoDataFoundException("Unable to find data for worldwide covid info.");
 
-        try {
-            return new ObjectMapper().readValue(generalCovidInfoJsonObj.toString(), VacCovidWorldCovidInfo.class);
-        } catch (JsonProcessingException e) {
-            throw new DataFetchException("Unable to parse data from upstream server.");
-        }
+        return new ObjectMapper().readValue(generalCovidInfoJsonObj.toString(), VacCovidWorldCovidInfo.class);
 
     }
 

@@ -2,6 +2,7 @@ package pt.ua.deti.tqs.covidinfoapi.sourceapi;
 
 import lombok.*;
 
+@Generated
 @Getter
 @RequiredArgsConstructor
 @EqualsAndHashCode

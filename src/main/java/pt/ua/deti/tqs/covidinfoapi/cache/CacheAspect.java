@@ -24,7 +24,7 @@ public class CacheAspect {
     @Pointcut("execution(* CacheManager.getCachedValue(..))")
     public void cacheAccessed() {}
 
-    @Pointcut("execution(* CacheManager.isValid(*))")
+    @Pointcut("execution(* CacheManager.isValid(..))")
     public void cacheVerified() {}
 
     @Pointcut("execution(* CacheManager.updateCachedValue(..))")
@@ -38,7 +38,7 @@ public class CacheAspect {
         else
             log.info(String.format("Internal cache %s was accessed by %s with args «%s».", jp.getArgs()[1].getClass().getSimpleName(), jp.getTarget().getClass().getSimpleName(), jp.getArgs()[0]));
 
-        cacheDetails.setCountOfRequests(cacheDetails.getCountOfRequests()+1);
+        cacheDetails.setCountOfUsages(cacheDetails.getCountOfUsages()+1);
 
     }
 

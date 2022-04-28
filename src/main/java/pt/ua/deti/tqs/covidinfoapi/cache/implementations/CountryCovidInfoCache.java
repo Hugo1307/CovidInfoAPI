@@ -1,18 +1,19 @@
 package pt.ua.deti.tqs.covidinfoapi.cache.implementations;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Generated;
+import lombok.Getter;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.IMultipleCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountryCovidInfo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
-@EqualsAndHashCode
-@ToString
 public class CountryCovidInfoCache implements IMultipleCache<String, CachedCountryCovidInfo> {
 
-    private static final Map<String, CachedCountryCovidInfo> storage = new HashMap<>();
+    @Generated
+    @Getter
+    private final Map<String, CachedCountryCovidInfo> storage = new HashMap<>();
 
     @Override
     public void setValue(String key, CachedCountryCovidInfo value) {
@@ -37,6 +38,29 @@ public class CountryCovidInfoCache implements IMultipleCache<String, CachedCount
     @Override
     public boolean isValid(String key) {
         return containsKey(key) && storage.get(key).isValid();
+    }
+
+    @Generated
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CountryCovidInfoCache that = (CountryCovidInfoCache) o;
+        return Objects.equals(storage, that.storage);
+    }
+
+    @Generated
+    @Override
+    public int hashCode() {
+        return Objects.hash(storage);
+    }
+
+    @Generated
+    @Override
+    public String toString() {
+        return "CountryCovidInfoCache{" +
+                "storage=" + storage +
+                '}';
     }
 
 }

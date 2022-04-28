@@ -55,12 +55,13 @@ public class MainController {
             apiService = vacCovidAPIService;
 
         Country country = new Country(countryName, countryCode);
+        String cacheKey = country.getName() + ":" + apiService.getClass().getSimpleName();
 
-        if (cacheManager.isValid(country.getName(), countryCovidInfoCache))
-            return new ResponseEntity<>(cacheManager.getCachedValue(country.getName(), countryCovidInfoCache).getCachedValue(), HttpStatus.OK);
+        if (cacheManager.isValid(cacheKey, countryCovidInfoCache))
+            return new ResponseEntity<>(cacheManager.getCachedValue(cacheKey, countryCovidInfoCache).getCachedValue(), HttpStatus.OK);
 
         CountryCovidInfo generalCovidInfo = apiService.getCountryCovidInfo(country);
-        cacheManager.updateCachedValue(country.getName(), new CachedCountryCovidInfo(generalCovidInfo, Date.from(Instant.now())), countryCovidInfoCache);
+        cacheManager.updateCachedValue(cacheKey, new CachedCountryCovidInfo(generalCovidInfo, Date.from(Instant.now())), countryCovidInfoCache);
 
         return new ResponseEntity<>(generalCovidInfo, HttpStatus.OK);
 

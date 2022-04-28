@@ -27,11 +27,6 @@ class Covid19ApiServiceTest {
     @InjectMocks
     private Covid19ApiService covid19ApiService;
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
     @Test
     void getCountryCovidInfo() {
 
