@@ -22,13 +22,19 @@ public class CacheAspect {
     }
 
     @Pointcut("execution(* CacheManager.getCachedValue(..))")
-    public void cacheAccessed() {}
+    public void cacheAccessed() {
+        // Pointcut method. Missing method body is intentional.
+    }
 
     @Pointcut("execution(* CacheManager.isValid(..))")
-    public void cacheVerified() {}
+    public void cacheVerified() {
+        // Pointcut method. Missing method body is intentional.
+    }
 
     @Pointcut("execution(* CacheManager.updateCachedValue(..))")
-    public void cacheUpdated() {}
+    public void cacheUpdated() {
+        // Pointcut method. Missing method body is intentional.
+    }
 
     @After("cacheAccessed()")
     public void cacheAccessedAdvice(JoinPoint jp) {

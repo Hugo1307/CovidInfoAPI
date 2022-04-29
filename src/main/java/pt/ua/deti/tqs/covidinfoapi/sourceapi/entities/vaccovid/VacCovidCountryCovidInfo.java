@@ -12,18 +12,6 @@ import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
 @NoArgsConstructor
 public class VacCovidCountryCovidInfo extends CountryCovidInfo {
 
-    public VacCovidCountryCovidInfo(String country, int population, int totalCases, int newCases, int totalDeaths, int newDeaths, int totalRecovered, int newRecovered, int activeCases, int rank, double infectionRisk, double caseFatalityRate, double testPercentage, int totalTests, int deathsPerMillion, int testsPerMillion, int casesPerMillion) {
-        super(country, population, totalCases, newCases, totalDeaths, newDeaths, totalRecovered, newRecovered, activeCases);
-        this.rank = rank;
-        this.infectionRisk = infectionRisk;
-        this.caseFatalityRate = caseFatalityRate;
-        this.testPercentage = testPercentage;
-        this.totalTests = totalTests;
-        this.deathsPerMillion = deathsPerMillion;
-        this.testsPerMillion = testsPerMillion;
-        this.casesPerMillion = casesPerMillion;
-    }
-
     private int rank;
 
     @JsonAlias("Infection_Risk")
@@ -46,5 +34,17 @@ public class VacCovidCountryCovidInfo extends CountryCovidInfo {
 
     @JsonAlias("TotCases_1M_Pop")
     private int casesPerMillion;
+
+    public VacCovidCountryCovidInfo(String country, int population, int totalCases, int newCases, int totalDeaths, int newDeaths, int totalRecovered, int newRecovered, int activeCases, int rank, double infectionRisk, double caseFatalityRate, double testPercentage, int totalTests, int deathsPerMillion, int testsPerMillion, int casesPerMillion) {
+        super(country, population, totalCases, newCases, totalDeaths, newDeaths, totalRecovered, newRecovered, activeCases);
+        this.rank = rank;
+        this.infectionRisk = infectionRisk;
+        this.caseFatalityRate = caseFatalityRate;
+        this.testPercentage = testPercentage;
+        this.totalTests = totalTests;
+        this.deathsPerMillion = deathsPerMillion;
+        this.testsPerMillion = testsPerMillion;
+        this.casesPerMillion = casesPerMillion;
+    }
 
 }
