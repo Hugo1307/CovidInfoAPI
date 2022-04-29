@@ -98,13 +98,31 @@ public class VacCovidApiRepository implements IExternalApiRepository {
 
     }
 
+    public JsonArray getCountryHistoryData(Country country) {
+
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("X-RapidAPI-Key", vacCovidAPI.getApiKey());
+
+        ResponseEntity<String> response = restTemplate.exchange(String.format(API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode()), HttpMethod.GET, new HttpEntity<>("body", headers), String.class);
+
+        if (!response.hasBody() || response.getBody() == null || response.getStatusCode() != HttpStatus.OK)
+            throw new DataFetchException("Unable to fetch world report. The server didn't report any results.");
+
+        String responseBodyAsString = response.getBody();
+        return JsonParser.parseString(responseBodyAsString).getAsJsonArray();
+
+    }
+
     @Getter
     @RequiredArgsConstructor
     enum API_ENDPOINTS {
         BASE_URL("https://vaccovid-coronavirus-vaccine-and-treatment-tracker.p.rapidapi.com/api"),
         COUNTRY_INFO(BASE_URL.getUrl() + "/npm-covid-data/country-report-iso-based/%s/%s"),
         WORLD_INFO(BASE_URL.getUrl() + "/npm-covid-data/world"),
-        ALL_COUNTRIES(BASE_URL.getUrl() + "/npm-covid-data/countries-name-ordered");
+        ALL_COUNTRIES(BASE_URL.getUrl() + "/npm-covid-data/countries-name-ordered"),
+        COUNTRY_HISTORY_INFO(BASE_URL.getUrl() + "/covid-ovid-data/sixmonth/%s");
 
         private final String url;
 

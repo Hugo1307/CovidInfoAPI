@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheDetails;
+import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryHistoryCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryListCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryCovidInfoCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.WorldCovidInfoSingleCache;
@@ -41,6 +42,12 @@ public class CovidInfoApiApplication {
     @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
     public CountryListCache countryListCache() {
         return new CountryListCache();
+    }
+
+    @Bean
+    @Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
+    public CountryHistoryCache countryHistoryCache() {
+        return new CountryHistoryCache();
     }
 
     @Bean

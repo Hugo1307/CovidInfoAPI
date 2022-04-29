@@ -1,6 +1,5 @@
 package pt.ua.deti.tqs.covidinfoapi.sourceapi.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
@@ -13,10 +12,13 @@ import pt.ua.deti.tqs.covidinfoapi.exception.implementations.NoDataFoundExceptio
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryCovidInfo;
+import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryHistoryData;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidWorldCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.repository.VacCovidApiRepository;
 
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class VacCovidApiService implements IExternalApiService {
@@ -66,6 +68,33 @@ public class VacCovidApiService implements IExternalApiService {
 
         return new ObjectMapper().readValue(generalCovidInfoJsonObj.toString(), VacCovidWorldCovidInfo.class);
 
+    }
+
+    @SneakyThrows
+    public List<VacCovidCountryHistoryData> getCountryHistory(Country country) {
+
+        JsonArray countryHistoryJsonArray = vacCovidApiRepository.getCountryHistoryData(country);
+
+        if (countryHistoryJsonArray == null)
+            throw new NoDataFoundException("Unable to find data for country history covid info.");
+
+        return new ObjectMapper().readValue(countryHistoryJsonArray.toString(), new TypeReference<>() {});
+
+    }
+
+    @SneakyThrows
+    public List<VacCovidCountryHistoryData> getCountryHistory(Country country, Date date) {
+
+        JsonArray countryHistoryJsonArray = vacCovidApiRepository.getCountryHistoryData(country);
+
+        if (countryHistoryJsonArray == null)
+            throw new NoDataFoundException("Unable to find data for country history covid info.");
+
+        List<VacCovidCountryHistoryData> covidCountryHistoryData = new ObjectMapper().readValue(countryHistoryJsonArray.toString(), new TypeReference<>() {});
+        return covidCountryHistoryData
+                .stream()
+                .filter(vacCovidCountryHistoryData -> Math.abs(vacCovidCountryHistoryData.getDate().getTime() - date.getTime()) < 24*60*60*1000)
+                .collect(Collectors.toList());
     }
 
 }

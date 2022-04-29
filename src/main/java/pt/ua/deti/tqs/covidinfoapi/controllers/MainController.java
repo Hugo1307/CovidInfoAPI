@@ -9,19 +9,26 @@ import pt.ua.deti.tqs.covidinfoapi.cache.CacheInjector;
 import pt.ua.deti.tqs.covidinfoapi.cache.CacheManager;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountryCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountriesList;
+import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountryHistoryInfo;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryCovidInfoCache;
+import pt.ua.deti.tqs.covidinfoapi.cache.implementations.CountryHistoryCache;
 import pt.ua.deti.tqs.covidinfoapi.cache.implementations.WorldCovidInfoSingleCache;
+import pt.ua.deti.tqs.covidinfoapi.exception.implementations.BadRequestException;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.ExternalAPI;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
+import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryHistoryData;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidWorldCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.services.Covid19ApiService;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.services.IExternalApiService;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.services.VacCovidApiService;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @RestController
@@ -107,6 +114,56 @@ public class MainController {
     @GetMapping(value = "/cache/details")
     ResponseEntity<?> getCacheDetails() {
         return new ResponseEntity<>(cacheDetails, HttpStatus.OK);
+    }
+
+    @GetMapping("/country/history")
+    ResponseEntity<?> getHistoryCountryCovidInfo(@RequestParam String countryName, @RequestParam String countryCode, @RequestParam Optional<String> dateFilter) {
+
+        CountryHistoryCache countryHistoryCache = cacheInjector.getCountryHistoryCache();
+
+        Country country = new Country(countryName, countryCode);
+
+        if (dateFilter.isEmpty()) {
+
+            if (cacheManager.isValid(country.getName(), countryHistoryCache)) {
+                return new ResponseEntity<>(cacheManager.getCachedValue(country.getName(), countryHistoryCache).getCachedValue(), HttpStatus.OK);
+            } else {
+
+                List<VacCovidCountryHistoryData> vacCovidCountryHistoryDataList = vacCovidAPIService.getCountryHistory(country);
+                CachedCountryHistoryInfo cachedCountryHistoryInfo = new CachedCountryHistoryInfo(vacCovidCountryHistoryDataList, Date.from(Instant.now()));
+
+                cacheManager.updateCachedValue(country.getName(), cachedCountryHistoryInfo, countryHistoryCache);
+                return new ResponseEntity<>(vacCovidCountryHistoryDataList, HttpStatus.OK);
+
+            }
+
+        } else {
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+
+            Date date;
+            try {
+                date = formatter.parse(dateFilter.get());
+            } catch (ParseException e) {
+                throw new BadRequestException("The provided date was invalid.");
+            }
+
+            String cacheKey = country.getName() + ":" + date.getTime();
+
+            if (cacheManager.isValid(cacheKey, countryHistoryCache)) {
+                return new ResponseEntity<>(cacheManager.getCachedValue(cacheKey, countryHistoryCache).getCachedValue(), HttpStatus.OK);
+            } else {
+
+                List<VacCovidCountryHistoryData> vacCovidCountryHistoryDataList = vacCovidAPIService.getCountryHistory(country, date);
+                CachedCountryHistoryInfo cachedCountryHistoryInfo = new CachedCountryHistoryInfo(vacCovidCountryHistoryDataList, Date.from(Instant.now()));
+
+                cacheManager.updateCachedValue(cacheKey, cachedCountryHistoryInfo, countryHistoryCache);
+                return new ResponseEntity<>(vacCovidCountryHistoryDataList, HttpStatus.OK);
+
+            }
+
+        }
+
     }
 
 }
