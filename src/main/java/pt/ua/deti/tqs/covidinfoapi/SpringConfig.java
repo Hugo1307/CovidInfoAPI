@@ -1,5 +1,6 @@
 package pt.ua.deti.tqs.covidinfoapi;
 
+import lombok.Generated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -11,6 +12,7 @@ public class SpringConfig implements WebMvcConfigurer {
 
     private final ControllerInterceptor controllerInterceptor;
 
+    @Generated
     @Autowired
     public SpringConfig(ControllerInterceptor controllerInterceptor) {
         this.controllerInterceptor = controllerInterceptor;
