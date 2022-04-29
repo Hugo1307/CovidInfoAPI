@@ -25,6 +25,12 @@ public class VacCovidCountryHistoryData {
     @JsonAlias("total_cases")
     private int totalCases;
 
+    @JsonAlias("new_cases")
+    private int newCases;
+
+    @JsonAlias("total_deaths")
+    private int totalDeaths;
+
     @JsonAlias("new_deaths")
     private int newDeaths;
 

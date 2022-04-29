@@ -1,7 +1,6 @@
 package pt.ua.deti.tqs.covidinfoapi.sourceapi.services;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,13 +9,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pt.ua.deti.tqs.covidinfoapi.exception.implementations.DataFetchException;
 import pt.ua.deti.tqs.covidinfoapi.exception.implementations.NoDataFoundException;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
+import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryHistoryData;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.repository.VacCovidApiRepository;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +32,9 @@ class VacCovidApiServiceTest {
 
     @InjectMocks
     private VacCovidApiService covidApiService;
+
+    @Mock
+    private Country country;
 
     @BeforeEach
     void setUp() {
@@ -201,6 +209,137 @@ class VacCovidApiServiceTest {
 
         doReturn(null).when(vacCovidApiRepository).getWorldCovidInfo();
         assertThrows(NoDataFoundException.class, () -> covidApiService.getWorldCovidInfo());
+
+    }
+
+    @Test
+    public void getCountryHistory() {
+
+        JsonArray jsonArray = JsonParser.parseString("[\n" +
+                "    {\n" +
+                "        \"id\": \"02ac2181-0648-401c-87e9-9c97071f3d06\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-30\",\n" +
+                "        \"total_cases\": 2611886,\n" +
+                "        \"new_cases\": 45335,\n" +
+                "        \"total_deaths\": 19856,\n" +
+                "        \"new_deaths\": 29,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"2aff17fe-d526-40d0-84ca-baf1f193b606\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-29\",\n" +
+                "        \"total_cases\": 2566551,\n" +
+                "        \"new_cases\": 59194,\n" +
+                "        \"total_deaths\": 19827,\n" +
+                "        \"new_deaths\": 39,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"e3683be3-f083-4abe-a73d-3f0d4585a551\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-28\",\n" +
+                "        \"total_cases\": 2507357,\n" +
+                "        \"new_cases\": 63833,\n" +
+                "        \"total_deaths\": 19788,\n" +
+                "        \"new_deaths\": 44,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    }" +
+                "]").getAsJsonArray();
+
+        doReturn(jsonArray).when(vacCovidApiRepository).getCountryHistoryData(country);
+
+        List<VacCovidCountryHistoryData> result = covidApiService.getCountryHistory(country);
+
+        assertThat(result)
+                .isNotNull()
+                .hasSize(3)
+                .extracting(VacCovidCountryHistoryData::getCountry).containsOnly("Portugal");
+
+        assertThat(result).extracting(VacCovidCountryHistoryData::getDate).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalCases).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewCases).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalDeaths).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewDeaths).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalTests).doesNotContainNull();
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewTests).doesNotContainNull();
+
+    }
+
+    @Test
+    public void getCountryHistory_withDate() throws ParseException {
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date date = formatter.parse("2022-01-30");
+
+        JsonArray jsonArray = JsonParser.parseString("[\n" +
+                "    {\n" +
+                "        \"id\": \"02ac2181-0648-401c-87e9-9c97071f3d06\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-30\",\n" +
+                "        \"total_cases\": 2611886,\n" +
+                "        \"new_cases\": 45335,\n" +
+                "        \"total_deaths\": 19856,\n" +
+                "        \"new_deaths\": 29,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"2aff17fe-d526-40d0-84ca-baf1f193b606\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-29\",\n" +
+                "        \"total_cases\": 2566551,\n" +
+                "        \"new_cases\": 59194,\n" +
+                "        \"total_deaths\": 19827,\n" +
+                "        \"new_deaths\": 39,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\": \"e3683be3-f083-4abe-a73d-3f0d4585a551\",\n" +
+                "        \"symbol\": \"PRT\",\n" +
+                "        \"Country\": \"Portugal\",\n" +
+                "        \"Continent\": \"Europe\",\n" +
+                "        \"date\": \"2022-01-28\",\n" +
+                "        \"total_cases\": 2507357,\n" +
+                "        \"new_cases\": 63833,\n" +
+                "        \"total_deaths\": 19788,\n" +
+                "        \"new_deaths\": 44,\n" +
+                "        \"total_tests\": 0,\n" +
+                "        \"new_tests\": 0\n" +
+                "    }" +
+                "]").getAsJsonArray();
+
+        doReturn(jsonArray).when(vacCovidApiRepository).getCountryHistoryData(country);
+
+        List<VacCovidCountryHistoryData> result = covidApiService.getCountryHistory(country, date);
+
+        assertThat(result)
+                .isNotNull()
+                .hasSize(1)
+                .extracting(VacCovidCountryHistoryData::getCountry).containsOnly("Portugal");
+
+        assertThat(result).extracting(VacCovidCountryHistoryData::getDate).first().isEqualTo(date);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalCases).first().isEqualTo(2611886);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewCases).first().isEqualTo(45335);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalDeaths).first().isEqualTo(19856);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewDeaths).first().isEqualTo(29);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getTotalTests).first().isEqualTo(0);
+        assertThat(result).extracting(VacCovidCountryHistoryData::getNewTests).first().isEqualTo(0);
 
     }
 

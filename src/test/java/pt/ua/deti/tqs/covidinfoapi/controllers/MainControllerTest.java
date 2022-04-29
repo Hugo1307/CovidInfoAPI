@@ -2,6 +2,7 @@ package pt.ua.deti.tqs.covidinfoapi.controllers;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,17 +20,21 @@ import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.covid19api.Covid19CountryCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryCovidInfo;
+import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidCountryHistoryData;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.vaccovid.VacCovidWorldCovidInfo;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.services.Covid19ApiService;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.services.VacCovidApiService;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -128,10 +133,12 @@ class MainControllerTest {
         CountryCovidInfo countryCovidInfo = new Covid19CountryCovidInfo("Portugal", 3791744,0 , 22162, 0, 0, 0, 0,10142721);
         CachedCountryCovidInfo cachedCountryCovidInfo = new CachedCountryCovidInfo(countryCovidInfo, Date.from(Instant.now()));
 
-        when(cacheManager.isValid(country.getName(), cacheInjector.getCountryCovidInfoCache())).thenReturn(true);
-        when(cacheManager.getCachedValue(country.getName(), cacheInjector.getCountryCovidInfoCache())).thenReturn(cachedCountryCovidInfo);
+        String cacheKey = country.getName() + ":" + covid19ApiService.getClass().getSimpleName();
 
-        mvc.perform(MockMvcRequestBuilders.get("/api/country?countryName=Portugal&countryCode=prt").contentType(MediaType.APPLICATION_JSON))
+        when(cacheManager.isValid(cacheKey, cacheInjector.getCountryCovidInfoCache())).thenReturn(true);
+        when(cacheManager.getCachedValue(cacheKey, cacheInjector.getCountryCovidInfoCache())).thenReturn(cachedCountryCovidInfo);
+
+        mvc.perform(MockMvcRequestBuilders.get("/api/country?countryName=Portugal&countryCode=prt&api=COVID_19").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.country", is("Portugal")))
                 .andExpect(jsonPath("$.population", is(countryCovidInfo.getPopulation())))
@@ -141,6 +148,9 @@ class MainControllerTest {
                 .andExpect(jsonPath("$.newDeaths", is(countryCovidInfo.getNewDeaths())))
                 .andExpect(jsonPath("$.totalRecovered", is(countryCovidInfo.getTotalRecovered())))
                 .andExpect(jsonPath("$.activeCases", is(countryCovidInfo.getActiveCases())));
+
+        verify(cacheManager, times(1)).isValid(cacheKey, cacheInjector.getCountryCovidInfoCache());
+        verify(cacheManager, times(1)).getCachedValue(cacheKey, cacheInjector.getCountryCovidInfoCache());
 
     }
 
@@ -260,6 +270,63 @@ class MainControllerTest {
                 .andExpect(jsonPath("$[0].code", is(countries.get(0).getCode())))
                 .andExpect(jsonPath("$[1].name", is(countries.get(1).getName())))
                 .andExpect(jsonPath("$[1].code", is(countries.get(1).getCode())));
+
+    }
+
+    @Test
+    void getHistoryCountryCovidInfo() throws Exception {
+
+        Country countryStub = new Country("Portugal", "prt");
+        VacCovidCountryHistoryData vacCovidCountryHistoryDataStub = new VacCovidCountryHistoryData("Portugal", Date.from(Instant.now()), 0,0,0,0,0,0);
+
+        List<VacCovidCountryHistoryData> vacCovidCountryHistoryDataList = Arrays.asList(vacCovidCountryHistoryDataStub, vacCovidCountryHistoryDataStub);
+
+        when(cacheManager.isValid(countryStub.getName(), cacheInjector.getCountryHistoryCache())).thenReturn(false);
+        when(vacCovidApiService.getCountryHistory(countryStub)).thenReturn(vacCovidCountryHistoryDataList);
+
+        mvc.perform(MockMvcRequestBuilders.get(String.format("/api/country/history?countryName=%s&countryCode=%s", countryStub.getName(), countryStub.getCode())).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].country", is(vacCovidCountryHistoryDataList.get(0).getCountry())))
+                .andExpect(jsonPath("$[0].totalCases", is(vacCovidCountryHistoryDataList.get(0).getTotalCases())))
+                .andExpect(jsonPath("$[0].newCases", is(vacCovidCountryHistoryDataList.get(0).getNewCases())))
+                .andExpect(jsonPath("$[0].totalDeaths", is(vacCovidCountryHistoryDataList.get(0).getTotalDeaths())))
+                .andExpect(jsonPath("$[0].newDeaths", is(vacCovidCountryHistoryDataList.get(0).getNewDeaths())))
+                .andExpect(jsonPath("$[0].totalTests", is(vacCovidCountryHistoryDataList.get(0).getTotalTests())))
+                .andExpect(jsonPath("$[0].newTests", is(vacCovidCountryHistoryDataList.get(0).getNewTests())));
+
+        verify(vacCovidApiService, times(1)).getCountryHistory(countryStub);
+
+    }
+
+    @Test
+    void getHistoryCountryCovidInfo_withDateFilter() throws Exception {
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        Date dateStub = formatter.parse("2022-01-30");
+
+        Country countryStub = new Country("Portugal", "prt");
+        VacCovidCountryHistoryData vacCovidCountryHistoryDataStub = new VacCovidCountryHistoryData("Portugal", dateStub, 0,0,0,0,0,0);
+
+        List<VacCovidCountryHistoryData> vacCovidCountryHistoryDataList = List.of(vacCovidCountryHistoryDataStub);
+
+        when(cacheManager.isValid(countryStub.getName(), cacheInjector.getCountryHistoryCache())).thenReturn(false);
+        when(vacCovidApiService.getCountryHistory(countryStub, dateStub)).thenReturn(vacCovidCountryHistoryDataList);
+
+        mvc.perform(MockMvcRequestBuilders.get(String.format("/api/country/history?countryName=%s&countryCode=%s&dateFilter=2022-01-30", countryStub.getName(), countryStub.getCode())).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].country", is(vacCovidCountryHistoryDataList.get(0).getCountry())))
+                .andExpect(jsonPath("$[0].totalCases", is(vacCovidCountryHistoryDataList.get(0).getTotalCases())))
+                .andExpect(jsonPath("$[0].newCases", is(vacCovidCountryHistoryDataList.get(0).getNewCases())))
+                .andExpect(jsonPath("$[0].totalDeaths", is(vacCovidCountryHistoryDataList.get(0).getTotalDeaths())))
+                .andExpect(jsonPath("$[0].newDeaths", is(vacCovidCountryHistoryDataList.get(0).getNewDeaths())))
+                .andExpect(jsonPath("$[0].totalTests", is(vacCovidCountryHistoryDataList.get(0).getTotalTests())))
+                .andExpect(jsonPath("$[0].newTests", is(vacCovidCountryHistoryDataList.get(0).getNewTests())));
+
+        verify(vacCovidApiService, times(1)).getCountryHistory(countryStub, dateStub);
 
     }
 

@@ -301,8 +301,8 @@ class VacCovidApiRepositoryTest {
                 .isNotNull()
                 .isArray()
                 .contains(
-                    json("{\"Country\":\"Austria\", \"ThreeLetterSymbol\":\"aut\"}"),
-                    json("{\"Country\":\"Angola\", \"ThreeLetterSymbol\":\"ago\"}")
+                        json("{\"Country\":\"Austria\", \"ThreeLetterSymbol\":\"aut\"}"),
+                        json("{\"Country\":\"Angola\", \"ThreeLetterSymbol\":\"ago\"}")
                 );
 
         verify(restTemplate, times(1)).exchange(eq(VacCovidApiRepository.API_ENDPOINTS.ALL_COUNTRIES.getUrl()), eq(HttpMethod.GET), any(), eq(String.class));
@@ -330,6 +330,102 @@ class VacCovidApiRepositoryTest {
         assertThrows(DataFetchException.class, () -> vacCovidApiRepository.getAllCountries());
 
         verify(restTemplate, times(1)).exchange(eq(VacCovidApiRepository.API_ENDPOINTS.ALL_COUNTRIES.getUrl()), eq(HttpMethod.GET), any(), eq(String.class));
+
+    }
+
+    @Test
+    void getCountryHistoryData() {
+
+        when(restTemplate.exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class)))
+                .thenReturn(new ResponseEntity<>("[\n" +
+                        "    {\n" +
+                        "        \"id\": \"02ac2181-0648-401c-87e9-9c97071f3d06\",\n" +
+                        "        \"symbol\": \"PRT\",\n" +
+                        "        \"Country\": \"Portugal\",\n" +
+                        "        \"Continent\": \"Europe\",\n" +
+                        "        \"date\": \"2022-01-30\",\n" +
+                        "        \"total_cases\": 2611886,\n" +
+                        "        \"new_cases\": 45335,\n" +
+                        "        \"total_deaths\": 19856,\n" +
+                        "        \"new_deaths\": 29,\n" +
+                        "        \"total_tests\": 0,\n" +
+                        "        \"new_tests\": 0\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"id\": \"2aff17fe-d526-40d0-84ca-baf1f193b606\",\n" +
+                        "        \"symbol\": \"PRT\",\n" +
+                        "        \"Country\": \"Portugal\",\n" +
+                        "        \"Continent\": \"Europe\",\n" +
+                        "        \"date\": \"2022-01-29\",\n" +
+                        "        \"total_cases\": 2566551,\n" +
+                        "        \"new_cases\": 59194,\n" +
+                        "        \"total_deaths\": 19827,\n" +
+                        "        \"new_deaths\": 39,\n" +
+                        "        \"total_tests\": 0,\n" +
+                        "        \"new_tests\": 0\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"id\": \"e3683be3-f083-4abe-a73d-3f0d4585a551\",\n" +
+                        "        \"symbol\": \"PRT\",\n" +
+                        "        \"Country\": \"Portugal\",\n" +
+                        "        \"Continent\": \"Europe\",\n" +
+                        "        \"date\": \"2022-01-28\",\n" +
+                        "        \"total_cases\": 2507357,\n" +
+                        "        \"new_cases\": 63833,\n" +
+                        "        \"total_deaths\": 19788,\n" +
+                        "        \"new_deaths\": 44,\n" +
+                        "        \"total_tests\": 0,\n" +
+                        "        \"new_tests\": 0\n" +
+                        "    },\n" +
+                        "    {\n" +
+                        "        \"id\": \"5f31b1d3-8d6d-4f51-aff2-621529b451b1\",\n" +
+                        "        \"symbol\": \"PRT\",\n" +
+                        "        \"Country\": \"Portugal\",\n" +
+                        "        \"Continent\": \"Europe\",\n" +
+                        "        \"date\": \"2022-01-23\",\n" +
+                        "        \"total_cases\": 2221825,\n" +
+                        "        \"new_cases\": 45569,\n" +
+                        "        \"total_deaths\": 19569,\n" +
+                        "        \"new_deaths\": 30,\n" +
+                        "        \"total_tests\": 32450789,\n" +
+                        "        \"new_tests\": 156704\n" +
+                        "    }" +
+                        "]", HttpStatus.OK));
+
+        JsonArray result = vacCovidApiRepository.getCountryHistoryData(country);
+
+        assertThatJson(result)
+                .isNotNull()
+                .isArray()
+                .first()
+                .isObject()
+                .containsKeys("Country", "date", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_tests", "new_tests");
+
+        verify(restTemplate, times(1)).exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class));
+
+    }
+
+    @Test
+    void getCountryHistoryData_nullBody() {
+
+        doReturn(new ResponseEntity<>(null, HttpStatus.OK))
+                .when(restTemplate).exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class));
+
+        assertThrows(DataFetchException.class, () -> vacCovidApiRepository.getCountryHistoryData(country));
+
+        verify(restTemplate, times(1)).exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class));
+
+    }
+
+    @Test
+    void getCountryHistoryData_no200Code() {
+
+        doReturn(new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR))
+                .when(restTemplate).exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class));
+
+        assertThrows(DataFetchException.class, () -> vacCovidApiRepository.getCountryHistoryData(country));
+
+        verify(restTemplate, times(1)).exchange(eq(String.format(VacCovidApiRepository.API_ENDPOINTS.COUNTRY_HISTORY_INFO.getUrl(), country.getCode())), eq(HttpMethod.GET), any(), eq(String.class));
 
     }
 
