@@ -18,8 +18,6 @@ import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.Country;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.junit.jupiter.api.Assertions.*;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.json;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)

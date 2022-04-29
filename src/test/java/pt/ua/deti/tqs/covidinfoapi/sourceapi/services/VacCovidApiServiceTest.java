@@ -36,11 +36,6 @@ class VacCovidApiServiceTest {
     @Mock
     private Country country;
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
     @Test
     void getCountryCovidInfo() {
 

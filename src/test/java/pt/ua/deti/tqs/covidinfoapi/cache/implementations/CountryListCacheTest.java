@@ -8,13 +8,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountriesList;
 import pt.ua.deti.tqs.covidinfoapi.sourceapi.ExternalAPI;
 
-import java.time.Instant;
-import java.util.Date;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CountryListCacheTest {

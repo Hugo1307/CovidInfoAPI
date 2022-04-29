@@ -6,14 +6,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pt.ua.deti.tqs.covidinfoapi.cache.entities.CachedCountryCovidInfo;
-import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.CountryCovidInfo;
-import pt.ua.deti.tqs.covidinfoapi.sourceapi.entities.covid19api.Covid19CountryCovidInfo;
-
-import java.time.Instant;
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
