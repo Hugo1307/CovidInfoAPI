@@ -9,7 +9,7 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("pt.ua.deti.tqs.covidinfoapi")
+@SelectClasspathResource("pt/ua/deti/tqs/covidinfoapi")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "pt.ua.deti.tqs.covidinfoapi")
 public class CucumberTest {
 

@@ -7,6 +7,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 public class LoginSteps {
 
@@ -14,7 +15,8 @@ public class LoginSteps {
 
     @When("I navigate to {string}")
     public void iNavigateTo(String url) {
-        driver = WebDriverManager.chromedriver().create();
+        WebDriverManager.chromedriver().create();
+        driver = new ChromeDriver();
         driver.get(url);
     }
 
