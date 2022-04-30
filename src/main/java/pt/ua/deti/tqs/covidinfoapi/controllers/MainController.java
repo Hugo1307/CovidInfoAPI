@@ -39,15 +39,13 @@ public class MainController {
     private final Covid19ApiService covid19ApiService;
     private final CacheManager cacheManager;
     private final CacheInjector cacheInjector;
-    private final CacheDetails cacheDetails;
 
     @Autowired
-    public MainController(VacCovidApiService vacCovidAPIService, Covid19ApiService covid19ApiService, CacheManager cacheManager, CacheInjector cacheInjector, CacheDetails cacheDetails) {
+    public MainController(VacCovidApiService vacCovidAPIService, Covid19ApiService covid19ApiService, CacheManager cacheManager, CacheInjector cacheInjector) {
         this.vacCovidAPIService = vacCovidAPIService;
         this.covid19ApiService = covid19ApiService;
         this.cacheInjector = cacheInjector;
         this.cacheManager = cacheManager;
-        this.cacheDetails = cacheDetails;
     }
 
     @GetMapping(value = "/country")
@@ -109,11 +107,6 @@ public class MainController {
         cacheManager.updateCachedValue(availableAPI, new CachedCountriesList(allCountries, Date.from(Instant.now())), cacheManager.getCountryListCache());
         return new ResponseEntity<>(allCountries, HttpStatus.OK);
 
-    }
-
-    @GetMapping(value = "/cache/details")
-    ResponseEntity<?> getCacheDetails() {
-        return new ResponseEntity<>(cacheDetails, HttpStatus.OK);
     }
 
     @GetMapping("/country/history")
